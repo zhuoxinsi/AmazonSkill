@@ -1,0 +1,50 @@
+{
+  "assetId": "ec5d10b1d98c5d6149b619b3c26a87e4",
+  "assetType": 2,
+  "category": "ecommerce",
+  "createdAt": "2026-04-27T00:00:00.000Z",
+  "description": "基于 A9+COSMO+Rufus 三算法的亚马逊 Listing 生成工具，7步流程指导用户准备资料，生成高转化 Listing",
+  "displayName": "亚马逊 Listing 智能生成器 (A9+COSMO+Rufus)",
+  "longDescription": "基于 A9+COSMO+Rufus 三算法的亚马逊 Listing 生成工具，7步流程指导用户准备资料，生成高转化 Listing。支持分阶段对话，自动校验合规性。",
+  "name": "amazon-listing-creator",
+  "ownerUserId": "local",
+  "tags": [
+    {
+      "description": "亚马逊平台",
+      "displayName": "amazon",
+      "tagId": "amazon"
+    },
+    {
+      "description": "产品详情页",
+      "displayName": "listing",
+      "tagId": "listing"
+    },
+    {
+      "description": "A9 搜索算法",
+      "displayName": "a9",
+      "tagId": "a9"
+    },
+    {
+      "description": "COSMO 意图理解算法",
+      "displayName": "cosmo",
+      "tagId": "cosmo"
+    },
+    {
+      "description": "Rufus 问答引擎",
+      "displayName": "rufus",
+      "tagId": "rufus"
+    },
+    {
+      "description": "答案引擎优化",
+      "displayName": "aeo",
+      "tagId": "aeo"
+    },
+    {
+      "description": "跨境电商",
+      "displayName": "ecommerce",
+      "tagId": "ecommerce"
+    }
+  ],
+  "updatedAt": "2026-04-27T00:00:00.000Z",
+  "viewerCanExpandReversionHistory": false
+}

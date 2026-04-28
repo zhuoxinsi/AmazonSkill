@@ -1,0 +1,58 @@
+# Amazon 违禁词黑名单（基础版）
+
+> 此文件用于 Listing 生成时的合规校验，请根据实际情况补充完善。
+
+---
+
+## 绝对禁止词（导致 Listing 下架）
+
+- `100% safe`
+- `guaranteed`
+- `FDA approved`
+- `cure`
+- `treat`
+- `prevent disease`
+- `best seller`（未经亚马逊官方认证）
+- `#1` / `number one`（无排名依据时）
+- `lifetime warranty`（除非真实提供）
+- `free`（不得用于非免费内容）
+- `environmentally friendly` / `eco-friendly` / `green`（需认证支持）
+- `organic`（需 USDA 认证）
+
+---
+
+## 医疗/健康类禁止词
+
+- `diagnose` / `treat` / `cure` / `prevent` / `mitigate`
+- `clinically proven` / `doctor recommended`（无证明时）
+- `pharmaceutical grade`
+
+---
+
+## 竞品引用禁止
+
+- 不得在 title 或 bullet points 中出现竞品品牌名
+
+---
+
+## 格式禁止
+
+- 搜索词字段：不得出现标点符号、重复词、竞品品牌词、ASIN
+
+---
+
+## 空洞形容词（Rufus 禁止）
+
+以下词汇除非有事实支撑，否则禁止使用：
+
+- `Premium` ❌ → 改为具体材质如 `304 Stainless Steel` ✅
+- `High Quality` ❌ → 改为具体参数如 `1.2mm Thickness` ✅
+- `Best` ❌ → 改为具体优势如 `Top-rated by 10,000+ customers` ✅
+- `Durable` ❌ → 改为具体数据如 `Lasts 5+ years with normal use` ✅
+
+---
+
+## 使用说明
+
+生成 Listing 时，AI 会自动校验输出内容是否包含上述违禁词。
+如发现违禁词，AI 会提示替换方案。
