@@ -1,8 +1,8 @@
 ---
 name: amazon-listing-creator
 displayName: 亚马逊 Listing 智能生成器 (A9+COSMO+Rufus)
-description: 基于 A9+COSMO+Rufus 三算法的亚马逊 Listing 生成工具，7步流程指导用户准备资料，生成高转化 Listing。支持分阶段对话，自动校验合规性。内置三层防护机制确保英文内容纯净。
-version: 1.2.0
+description: 基于 A9+COSMO+Rufus 三算法的亚马逊 Listing 生成工具，7步流程指导用户准备资料，生成高转化 Listing。支持分阶段对话，自动校验合规性。
+version: 2.0.0
 type: skill
 tags:
   - amazon
@@ -28,7 +28,45 @@ trigger:
     - Listing优化
 ---
 
-# 亚马逊 Listing 智能生成器
+# ⚠️⚠️⚠️ 强制合规声明（MUST READ BEFORE EXECUTION）⚠️⚠️⚠️
+
+> **你生成的 Excel 必须 100% 符合以下规格，不得有任何偏差：**
+>
+> ## 硬性规格（违反任何一项 = 输出不合格）
+>
+> | # | 规格项 | 要求 | 你必须做的 |
+> |---|--------|------|-----------|
+> | 1 | **Sheet 数量** | 单 Sheet，名称 **"Amazon Listing"** | 只能创建 1 个 Sheet |
+> | 2 | **第1行** | 主标题行，合并A:E，深蓝底 `#2E75B6`，白字粗体14pt | 必须按此样式 |
+> | 3 | **第2行（强制）** | 出品信息行，内容固定为 `Hanson出品|亚马逊选品/运营/Agent/Skill专家|hansonbtc@163.com`，浅灰底 `#D9D9D9`，10pt居中 | **原文一字不动，不得翻译、不得修改** |
+> | 4 | **列数** | **5列**（A=模块/序号, B=内容, C=场景词/翻译, D=关键词/说明, E=中文翻译） | 不能是2列或3列或4列 |
+> | 5 | **模块数量** | **5个模块**：Title → Bullet Points×5 → Search Terms(含备注行) → Validation Summary(11项) → 主图建议(6条) | 缺一不可 |
+> | 6 | **Search Terms 备注行** | Search Terms 数据行下方必须有备注行（字节数统计/排除词/新增长尾/合规检查） | 不能省略 |
+> | 7 | **主图设计建议** | 第5个模块，6条建议（卖点名称+图片类型+视觉表达） | 不能省略 |
+> | 8 | **Title 行高** | 90 | 必须设置 |
+> | 9 | **颜色值** | 必须使用指定色值（深蓝`#2E75B6`/中蓝`#4472C4`/浅蓝`#D9E2F3`/出品灰`#D9D9D9`/通过绿`#C6EFCE`） | 不得自选颜色 |
+>
+> ## 🚫 禁止行为
+>
+> - ❌ **禁止 AI 自行编写 Excel 生成代码** — 必须调用 `scripts/gen_listing_excel.py`
+> - ❌ **禁止猜测替代方案** — 如果无法保证以上任何一项，立即告知用户
+> - ❌ **禁止省略任何模块或行**
+> - ❌ **禁止修改出品信息行的原文**
+> - ❌ **禁止使用非指定的颜色值**
+>
+> ## ✅ 正确执行方式
+>
+> **Step 1**: 收集完4份数据文件后，将 Listing 内容填入 `scripts/gen_listing_excel.py` 的数据区
+>
+> **Step 2**: 执行脚本: `python scripts/gen_listing_excel.py`
+>
+> **Step 3**: 脚本内置 `validate_output()` 自动校验，不合格会直接报错
+>
+> **Step 4**: 将生成的 .xlsx 路径返回给用户
+
+---
+
+# 亚马逊 Listing 智能生成器 v2.0
 
 基于亚马逊 **A9 + COSMO + Rufus** 三算法优化的 Listing 生成工具。
 
@@ -37,7 +75,7 @@ trigger:
 - 分阶段引导用户准备 4 个关键文件
 - 生成符合 AEO (Answer Engine Optimization) 逻辑的 Listing
 - 自动校验合规黑名单，避免违规词
-- **三层防护机制**确保导出的英文 Listing 绝对纯净
+- **脚本强制校验**：生成后自动验证格式合规性，不合规直接报错
 
 ## 三大算法说明
 
@@ -62,204 +100,69 @@ trigger:
 
 - **Title** (标题) - A9 优化，≤200字符
 - **Bullet Points** (五点描述) - Rufus + COSMO 驱动
-- **Product Description** (产品描述) - AEO 就绪
 - **Search Terms** (后台搜索词) - 无重复、无竞品品牌
-
-## 数据字段命名规范（三层防护 - 第1层）
-
-所有 Listing 数据必须严格遵循以下字段命名约定，从数据源头杜绝中英混用：
-
-### 字段分离规则
-
-```
-TITLE_DATA = {
-    "en": "...",       # ← 英文标题，纯英文
-    "zh": "...",       # ← 中文翻译，纯中文
-    "scene": "...",    # ← 场景词，永远纯英文
-    "keywords": "...", # ← 关键词，永远纯英文
-}
-```
-
-### 核心铁律
-
-1. **`_en` 字段** = 纯英文（允许数字、标点），绝不允许出现中文字符
-2. **`_zh` 字段** = 纯中文翻译，仅用于中文翻译列
-3. **`scene` 字段** = 永远纯英文（如 "farmhouse kitchen, quality living"）
-4. **`keywords` 字段** = 永远纯英文（如 "acacia wood, FDA certified"）
-5. **Bullet Points** 同理：`title_en` / `content_en` / `scene` / `keywords` / `title_zh` / `content_zh`
-
-### 数据结构示例（Bullet Points）
-
-```python
-BULLETS_DATA = [
-    {
-        "num": "1",
-        "title_en": "Premium Acacia Wood Craftsmanship",  # 英文标题
-        "title_zh": "优质相思木工艺",                        # 中文翻译
-        "content_en": "Crafted from 100% natural...",       # 英文内容
-        "content_zh": "采用100%天然相思木...",                # 中文翻译
-        "scene": "quality living, farmhouse style",         # 永远英文
-        "keywords": "acacia wood, FDA certified"            # 永远英文
-    },
-    ...
-]
-```
+- **Validation Summary** (11项自动校验)
+- **主图设计建议** (6条)
 
 ## 导出格式标准（Excel）
 
-Listing 生成完成后，必须按以下标准格式导出为 `.xlsx` 文件。
-
 ### 文件命名规则
-
 ```
 {Brand}_{Model}_{产品名}_Listing.xlsx
-示例: Hanson_AMZ001_Utensil_Holder_Listing.xlsx
+示例: TIMAVEX_JR070_Utensil_Holder_Listing.xlsx
 ```
-
-> **Brand** 和 **Model** 来自 Phase 3.1 本品属性表的首要确认项。
 
 ### Sheet 结构（单 Sheet: "Amazon Listing"）
 
-#### 第1行：主标题行
+#### 完整行结构（37行）
 
 ```
-Amazon Listing - {Model} {产品中文简称} / {产品英文名}
-示例: Amazon Listing - AMZ001相思木餐具收纳架 / Acacia Wood Utensil Holder
+行 1  │ 主标题行          │ 合并A:E, #2E75B6深蓝底, 白字粗体14pt, 行高32
+行 2  │ 【固定出品信息行】│ 合并A:E, #D9D9D9浅灰底, 黑字10pt居中, 行高20
+       │ Hanson出品|亚马逊选品/运营/Agent/Skill专家|hansonbtc@163.com
+行 3  │ 模块1标题        │ 合并A:E, #4472C4蓝底, 白字粗体11pt, 行高22
+行 4  │ 表头             │ #D9E2F3浅蓝底, 黑字粗体10pt, 行高18
+行 5  │ Title数据        │ 白底10pt, 行高90, 5列(A/B/C/D/E)
+行 6  │ 模块2标题        │ 同行3格式
+行 7  │ 表头             │ 同行4格式
+行 8-12 │ Bullet 1-5     │ 白底10pt, 行高90, 5列
+行 13 │ 模块3标题        │ 同上
+行 14 │ 表头             │ 同上
+行 15 │ Search Terms数据 │ 白底, 行高65
+行 16 │ 备注行           │ #F5F5F5淡灰底, 斜体9pt灰色, 行高35
+行 17 │ 模块4标题        │ 同上
+行 18 │ 表头             │ 同上
+行 19-29 │ 校验汇总(11项) │ 绿底#C6EFCE=通过, 白底B/C列, 行高22
+行 30 │ 模块5标题        │ 同上
+行 31 │ 表头             │ 同上
+行 32-37 │ 主图建议(6条)  │ 白底, 3列有效(A/B/C), 行高45
 ```
 
-> 合并 A1:E1，深蓝色底 (#2E75B6)，白色粗体 14pt
-
-#### 第2行：出品信息行
-
+#### 【固定出品信息行】（第2行，MUST）
 ```
-{Brand}出品 | {品牌定位描述} / {联系邮箱}
-示例: Hanson出品 | 亚马逊跨境选品/运营/Agent/Skill专家/hansonbtc@163.com
+内容: Hanson出品|亚马逊选品/运营/Agent/Skill专家|hansonbtc@163.com
+格式: 合并A2:E2, #D9D9D9浅灰底, 10pt Calibri黑色, 居中, 细边框
+行高: 20
 ```
+> **警告**: 原文一字不动，不得翻译、不压缩、不改格式。这是硬性要求。
 
-> 合并 A2:E2，灰色小字 (9pt, color #666666)，居中对齐
+#### 列宽固定值
+| A | B | C | D | E |
+|---|---|---|---|---|
+| 16 | 58 | 22 | 30 | 45 |
 
-#### 模块 1: Title（5列）
-
-| 列 | 字段名 | 说明 |
-|---|--------|------|
-| A | 模块 | 固定值 "Title" |
-| B | 内容 | 完整英文标题文本（`TITLE_DATA["en"]`） |
-| C | 场景词 | 标题覆盖的主要场景（`TITLE_DATA["scene"]`，永远英文） |
-| D | 关键词埋入 | 标题中包含的核心关键词（`TITLE_DATA["keywords"]`，永远英文） |
-| E | 中文翻译 | 标题中文译文（`TITLE_DATA["zh"]`） |
-
-#### 模块 2: Bullet Points（5列）
-
-| 列 | 字段名 | 说明 |
-|---|--------|------|
-| A | # | 序号 1-5 |
-| B | Bullet Point | 完整英文五点描述（`title_en` + `content_en` 组装） |
-| C | 场景词 | 该条描述覆盖的使用场景词（`scene`，永远英文） |
-| D | 关键词埋入 | 该条埋入的关键词列表（`keywords`，永远英文） |
-| E | 中文翻译 | 五点中文译文（`title_zh` + `content_zh` 组装） |
-
-#### 模块 3: Search Terms（CDE 合并宽列格式）
-
-**表头行**：
-| 列 | 字段名 | 说明 |
-|---|--------|------|
-| A | 字段 | 固定值 "字段" |
-| B | English (英文) | 固定值 "English (英文)" |
-| C-E | 中文翻译 | **合并 C:E 列**，表头居中显示 |
-
-> ⚠️ 中文翻译列合并 C:E 三列，加宽显示以避免内容截断。
-
-**数据行**：
-| 列 | 字段名 | 说明 |
-|---|--------|------|
-| A | Search Terms | 固定值 |
-| B | 英文搜索词 | 空格分隔的搜索词串（`SEARCH_TERMS_DATA["en"]`） |
-| C-E | 中文翻译 | **合并 C:E 列**（`SEARCH_TERMS_DATA["zh"]`） |
-
-**备注行**（紧接数据行下方，合并 A:C）：
-- 字节数统计（≤250 bytes）
-- 已排除词（重复词、竞品品牌词、标点）
-- 新增长尾词
-- 排序说明（核心词前置）
-- 合规检查结果
-
-#### 模块 4: 校验汇总 Validation Summary（3列）
-
-| 列 | 字段名 | 说明 |
-|---|--------|------|
-| A | 项目 | 校验项名称 |
-| B | 要求 | 规则要求 |
-| C | 状态 | 实际结果 + 通过/失败标记 |
-
-**必检项目（11项）**：
-- Title 字符数 ≤ 200
-- Bullet 1-5 各 ≤ 500 字符（5项）
-- Search Terms 字节 ≤ 250 bytes
-- A9 合规（核心词前置，长尾覆盖）
-- COSMO 合规（明确人群词 + 使用场景）
-- Rufus 合规（所有卖点有数据支撑）
-- 合规黑名单（无 best/premium/guaranteed/eco-friendly 等）
-
-#### 模块 5: 主图设计建议（合并单元格 A:E）
-
-从 Listing 提取的核心卖点 → 主图视觉表达建议，每条包含：
-- 卖点名称
-- 主图展示方式
-- 特写/对比/场景图建议
-- 主图+辅图组合建议（白底图、场景图、细节图、信息图、生活方式图）
-
-### 样式规范
-
-- **主标题行**: 合并 A1:E1，深蓝色底 (#2E75B6)，白色粗体 14pt，行高 30
-- **出品信息行**: 合并 A2:E2，灰色小字 9pt (#666666)，居中，行高 18
-- **模块标题**: 合并行，蓝色底 (#4472C4)，白色粗体 11pt，行高 20
-- **表头行**: 浅蓝底 (#D9E2F3)，黑色粗体 10pt
-- **所有单元格**: 细边框，自动换行 (wrap_text)
-- **列宽参考**: A=16, B=58, C=22, D=30, E=45
-- **行高**: Title=55, Bullet=85, Search Terms=60-65, 备注=80, 主图建议=280-380
-
-## 三层防护机制（英文质量保障）
-
-导出 Excel 时，通过三层防护确保英文 Listing 绝对纯净，不会出现中文字符混入：
-
-```
-┌─────────────────────────────────────────┐
-│ 第 1 层：数据分离                        │
-│   所有数据结构使用 _en / _zh 严格分离     │
-│   scene / keywords 字段永远纯英文        │
-│   从数据源头杜绝混用可能                  │
-└─────────────────────────────────────────┘
-                ↓ 校验通过 ↓
-┌─────────────────────────────────────────┐
-│ 第 2 层：校验检测                        │
-│   导出前正则扫描所有英文字段              │
-│   [\u4e00-\u9fff] 匹配中文字符          │
-│   发现中文 → 立即报错中断 + 定位字段     │
-└─────────────────────────────────────────┘
-                ↓ 校验通过 ↓
-┌─────────────────────────────────────────┐
-│ 第 3 层：模板隔离                        │
-│   英文列只读 _en 字段                    │
-│   中文列只读 _zh 字段                    │
-│   Excel 写入时严格字段对应               │
-│   从结构上杜绝混用可能                   │
-└─────────────────────────────────────────┘
-```
-
-### 第 2 层校验实现
-
-导出脚本必须包含 `validate_english_only()` 函数：
-
+#### 样式常量（供 gen_listing_excel.py 使用）
 ```python
-def validate_english_only(text, field_name):
-    """校验文本是否为纯英文，发现中文立即报错"""
-    chinese_pattern = re.compile(r'[\u4e00-\u9fff]')
-    if chinese_pattern.search(text):
-        raise ValueError(f"字段 '{field_name}' 包含中文，应为纯英文: {text[:100]}")
-    return True
+C_MAIN_TITLE_BG = "2E75B6"   # 深蓝
+C_MAIN_TITLE_FT = "FFFFFF"   # 白字
+C_MODULE_BG     = "4472C4"   # 中蓝
+C_HEADER_BG     = "D9E2F3"   # 浅蓝
+C_HEADER_FT     = "000000"   # 黑字
+C_BRAND_BG      = "D9D9D9"   # 出品信息行浅灰
+C_PASS_BG       = "C6EFCE"   # 校验通过行背景
+C_PASS_FT       = "276221"   # 校验通过绿色字
+C_BORDER        = "B4C6E7"   # 边框线色
 ```
-
-导出前批量校验所有英文字段（Title、Bullets、Search Terms），任一校验失败则**中断导出**。
 
 ## 质量标准
 
@@ -269,7 +172,7 @@ def validate_english_only(text, field_name):
 - ✅ **COSMO 合规**: 明确人群词 + 场景词
 - ✅ **Rufus 合规**: 所有卖点有数据/事实支撑，无空洞形容词
 - ✅ **合规黑名单**: 未出现违禁词
-- ✅ **英文纯净**: 三层防护校验全部通过
+- ✅ **格式合规**: 脚本 validate_output() 自动校验 37 行结构
 
 ## 使用方式
 
@@ -286,5 +189,12 @@ def validate_english_only(text, field_name):
 
 - Python 3.x
 - openpyxl 库 (`pip install openpyxl`)
-- 导出脚本使用 `qclaw-text-file` skill 写入（自动处理 UTF-8 BOM 和换行符）
-- Windows 环境下路径使用 raw string (`r"C:\path\to\file"`)
+- 导出脚本使用 UTF-8 编码，Windows 环境需注意路径处理
+
+## 版本历史
+
+| 版本 | 日期 | 变更 |
+|------|------|------|
+| 1.0.0 | 2026-04-27 | 初始版本 |
+| 1.1.0 | 2026-04-29 | 固化出品信息行、Excel格式框架 |
+| **2.0.0** | **2026-04-29** | **加强制合规声明 + 脚本校验 + 禁止AI自编代码** |
